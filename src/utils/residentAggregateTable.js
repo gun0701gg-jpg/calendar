@@ -117,6 +117,10 @@ function rateFractionFormula(row) {
   return `IFERROR(VALUE(SUBSTITUTE(E${row},"%",""))/100,0)`;
 }
 
+function baseAmountFormula(row) {
+  return `${gradeRateFormula(row)}*F${row}`;
+}
+
 function mealBaseFormula(row) {
   return `(4300*3*F${row})+IF(T${row}="O",0,1000*F${row})`;
 }
@@ -135,20 +139,19 @@ export function buildAggregateSheetXml(residents, billingMonth, warnings = []) {
     const row = firstDataRow + i;
     const nameStyle = r.isTubeFeeding ? AGG_STYLE.textHighlight : AGG_STYLE.text;
 
+    // 공단부담금은 총산출금액(등급별금액*일수)*(1-본인부담률)을 원 단위(일의 자리)에서 올림하고,
+    // 본인부담금은 총산출금액에서 그 공단부담금을 뺀 나머지로 계산해서 둘의 합이 항상
+    // 총산출금액과 정확히 같게 한다.
     const insurancePayCell = r.alreadyGone
       ? numberXml(`G${row}`, AGG_STYLE.numberAccounting, 0)
       : formulaXml(
           `G${row}`,
           AGG_STYLE.numberAccounting,
-          `IF(D${row}="등급외",0,${gradeRateFormula(row)}*F${row}*(1-${rateFractionFormula(row)}))`
+          `IF(D${row}="등급외",0,ROUNDUP(${baseAmountFormula(row)}*(1-${rateFractionFormula(row)}),0))`
         );
     const selfPayCell = r.alreadyGone
       ? numberXml(`H${row}`, AGG_STYLE.numberAccounting, 0)
-      : formulaXml(
-          `H${row}`,
-          AGG_STYLE.numberAccounting,
-          `IF(D${row}="등급외",0,${gradeRateFormula(row)}*F${row}*${rateFractionFormula(row)})`
-        );
+      : formulaXml(`H${row}`, AGG_STYLE.numberAccounting, `IF(D${row}="등급외",0,${baseAmountFormula(row)}-G${row})`);
     const mealCostCell = r.alreadyGone
       ? numberXml(`I${row}`, AGG_STYLE.numberAccounting, 0)
       : formulaXml(
