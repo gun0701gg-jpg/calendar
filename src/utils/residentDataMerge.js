@@ -127,9 +127,9 @@ function parseRateFraction(rateText) {
   return Number.isFinite(n) ? n / 100 : 0;
 }
 
-// 공단부담금 = 등급별 금액 * 일수 * (1-본인부담률)을 원 단위(일의 자리)에서 올림한 값. 본인부담금은
-// 그 나머지(총산출금액인 등급별 금액*일수 - 공단부담금)로 계산해서, 공단부담금+본인부담금이 항상
-// 총산출금액과 정확히 일치하게 한다(따로따로 올림/반올림하면 1원이 안 맞을 수 있어서).
+// 공단부담금 = 등급별 금액 * 일수 * (1-본인부담률)을 일의 자리에서 올림(10원 단위로 올림, 예:
+// 2,250,504원 → 2,250,510원)한 값. 본인부담금은 그 나머지(총산출금액인 등급별 금액*일수 -
+// 공단부담금)로 계산해서, 공단부담금+본인부담금이 항상 총산출금액과 정확히 일치하게 한다.
 // 등급외는 공단부담금 개념이 없어서 전액을 등급외 열에 담는다.
 // 식사재료비(명세서에는 간식대를 합쳐서 "식사재료비④" 한 칸에 표시)는 등급과 상관없이 실제로
 // 식사를 제공한 만큼 매기는 별도 항목이라 등급외도 똑같이 계산한다.
@@ -157,7 +157,7 @@ function computeGradeBasedAmounts(roster, days, isTubeFeeding) {
   }
 
   const rate = parseRateFraction(roster.selfPayRate);
-  const insurancePay = Math.ceil(baseAmount * (1 - rate));
+  const insurancePay = Math.ceil((baseAmount * (1 - rate)) / 10) * 10;
   return {
     insurancePay,
     selfPay: baseAmount - insurancePay,

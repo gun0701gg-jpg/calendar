@@ -139,15 +139,15 @@ export function buildAggregateSheetXml(residents, billingMonth, warnings = []) {
     const row = firstDataRow + i;
     const nameStyle = r.isTubeFeeding ? AGG_STYLE.textHighlight : AGG_STYLE.text;
 
-    // 공단부담금은 총산출금액(등급별금액*일수)*(1-본인부담률)을 원 단위(일의 자리)에서 올림하고,
-    // 본인부담금은 총산출금액에서 그 공단부담금을 뺀 나머지로 계산해서 둘의 합이 항상
-    // 총산출금액과 정확히 같게 한다.
+    // 공단부담금은 총산출금액(등급별금액*일수)*(1-본인부담률)을 일의 자리에서 올림(10원 단위로
+    // 올림, 예: 2,250,504원 → 2,250,510원)하고, 본인부담금은 총산출금액에서 그 공단부담금을 뺀
+    // 나머지로 계산해서 둘의 합이 항상 총산출금액과 정확히 같게 한다.
     const insurancePayCell = r.alreadyGone
       ? numberXml(`G${row}`, AGG_STYLE.numberAccounting, 0)
       : formulaXml(
           `G${row}`,
           AGG_STYLE.numberAccounting,
-          `IF(D${row}="등급외",0,ROUNDUP(${baseAmountFormula(row)}*(1-${rateFractionFormula(row)}),0))`
+          `IF(D${row}="등급외",0,ROUNDUP(${baseAmountFormula(row)}*(1-${rateFractionFormula(row)}),-1))`
         );
     const selfPayCell = r.alreadyGone
       ? numberXml(`H${row}`, AGG_STYLE.numberAccounting, 0)
