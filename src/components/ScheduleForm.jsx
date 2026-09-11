@@ -5,12 +5,22 @@ const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 const MINUTES = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
 const FLOORS = ["3", "4", "5", "6"];
 
+// 입소상담은 면회(이름/층)처럼 "입소상담 "을 제목 앞에 붙여서 저장한다(캘린더에는 시간 다음에
+// 제목을 그대로 보여주기 때문에, 이렇게 해야 면회와 똑같이 "시간 입소상담 ..." 형태로 보인다).
+const CONSULT_TITLE_PREFIX = "입소상담 ";
+
 export default function ScheduleForm({ initial, onSubmit, onCancel }) {
   const visitMatch = initial?.title?.match(VISIT_TITLE_PATTERN);
   const initialCategory = visitMatch ? "visit" : initial?.category === "consult" ? "consult" : "schedule";
 
   const [category, setCategory] = useState(initialCategory);
-  const [title, setTitle] = useState(!visitMatch ? initial?.title || "" : "");
+  const [title, setTitle] = useState(
+    visitMatch
+      ? ""
+      : initialCategory === "consult"
+      ? (initial?.title || "").replace(new RegExp(`^${CONSULT_TITLE_PREFIX}\\s*`), "")
+      : initial?.title || ""
+  );
   const [name, setName] = useState(visitMatch ? visitMatch[1] : "");
   const [floor, setFloor] = useState(visitMatch ? visitMatch[2] : "3");
   const [hasTime, setHasTime] = useState(initialCategory === "visit" || !!initial?.time);
@@ -38,8 +48,11 @@ export default function ScheduleForm({ initial, onSubmit, onCancel }) {
     if (category === "visit") {
       if (!name.trim()) return;
       finalTitle = `면회(${name.trim()}/${floor}층)`;
-    } else if (!finalTitle) {
-      return;
+    } else {
+      if (!finalTitle) return;
+      if (category === "consult") {
+        finalTitle = `${CONSULT_TITLE_PREFIX}${finalTitle}`;
+      }
     }
 
     setSaving(true);
