@@ -16,12 +16,13 @@ import WorkScheduleUploadModal from "./components/WorkScheduleUploadModal";
 import ConsultationView from "./components/ConsultationView";
 import AccessManageModal from "./components/AccessManageModal";
 import ResidentStatementView from "./components/ResidentStatementView";
+import AdmissionDocumentsView from "./components/AdmissionDocumentsView";
 import { createSchedule, deleteSchedule, updateSchedule, useSchedules } from "./hooks/useSchedules";
 import { useAllowedEmails } from "./hooks/useAccessControl";
 
 function CalendarApp({ readOnly }) {
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState("calendar"); // "calendar" | "consultation" | "statement"
+  const [activeView, setActiveView] = useState("calendar"); // "calendar" | "consultation" | "statement" | "documents"
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -57,6 +58,7 @@ function CalendarApp({ readOnly }) {
 
   const showConsultation = !readOnly && activeView === "consultation";
   const showStatement = !readOnly && activeView === "statement";
+  const showDocuments = !readOnly && activeView === "documents";
 
   return (
     <div className="app">
@@ -90,6 +92,10 @@ function CalendarApp({ readOnly }) {
       ) : showStatement ? (
         <main className="app-main app-main--single">
           <ResidentStatementView />
+        </main>
+      ) : showDocuments ? (
+        <main className="app-main app-main--single">
+          <AdmissionDocumentsView />
         </main>
       ) : (
         <main className="app-main">

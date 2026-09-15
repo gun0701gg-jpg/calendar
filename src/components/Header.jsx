@@ -46,6 +46,12 @@ export default function Header({
           >
             수급자 명세서
           </button>
+          <button
+            className={`chip ${activeView === "documents" ? "chip--active" : ""}`}
+            onClick={() => onSwitchView("documents")}
+          >
+            입소서류
+          </button>
         </div>
       )}
 
